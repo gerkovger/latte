@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# PROVIDE: vanilla
+# REQUIRE: networking
+# KEYWORD: 
+ 
+. /etc/rc.subr
+ 
+name="vanilla"
+rcvar="vanilla_enable"
+command="/root/vanilla/vanilla-start.sh"
+vanilla_user="root"
+pidfile="/var/run/${name}.pid"
+ 
+start_cmd="vanilla_start"
+stop_cmd="vanilla_stop"
+status_cmd="vanilla_status"
+
+vanilla_start() {
+        /usr/sbin/daemon -P ${pidfile} -r -f -u $vanilla_user $command
+}
+
+vanilla_stop() {
+        if [ -e "${pidfile}" ]; then
+                kill -s TERM `cat ${pidfile}`
+		/root/vanilla/vanilla-stop.sh
+        else
+                echo "${name} is not running"
+        fi
+
+}
+
+vanilla_status() {
+        if [ -e "${pidfile}" ]; then
+                echo "${name} is running as pid `cat ${pidfile}`"
+        else
+                echo "${name} is not running"
+        fi
+}
+ 
+load_rc_config $name
+: ${vanilla_enable:=no}
+ 
+run_rc_command "$1"
+
