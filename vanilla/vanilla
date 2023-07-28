@@ -1,13 +1,46 @@
 #!/bin/sh
 
+copy-service() {
+	echo "Copying service descriptor to jail '"$NAME"'"
+	JPATH=`jls -j $NAME | cut -w -f 5 | tail -1`	
+	cp service/vanilla-srv $JPATH/etc/rc.d/vanilla    
+	mkdir $JPATH/root/vanilla
+	cp service/vanilla-start.sh $JPATH/root/vanilla
+	cp service/vanilla-stop.sh $JPATH/root/vanilla
+
+}
+
+install-pkgs() {
+    bastille cmd $NAME pkg install -y openjdk17 git maven
+}
+
+fetch-build-deploy() {
+	JPATH=`jls -j $NAME | cut -w -f 5 | tail -1`	
+
+	bastille cmd $NAME git clone https://github.com/kogebu/latte-vanilla.git vanilla-src
+	bastille cmd $NAME mvn clean package -f /root/vanilla-src/pom.xml
+
+	mv $JPATH/root/vanilla-src/target/vanilla*.jar $JPATH/root/vanilla/vanilla.jar
+	cp $JPATH/root/vanilla-src/src/main/resources/application.properties $JPATH/root/vanilla/application.properties
+	echo "jail.name="$NAME >> $JPATH/root/vanilla/application.properties
+	echo 'vanilla_enable="YES"' >> $JPATH/etc/rc.conf
+
+	rm -rf $JPATH/root/vanilla-src
+
+	bastille cmd $NAME service vanilla start
+}
+
 create_jail() {
-    echo "Creating vanilla jail with name" $NAME "at" $IP
-    REL=$(uname -a | cut -w -f 3)
-    echo "Release:" $REL
-    bastille create $NAME $REL $IP
-    
-    
-    bastille cmd $NAME pkg install -y openjdk17
+	echo "Creating vanilla jail with name" $NAME "at" $IP
+	REL=$(uname -a | cut -w -f 3)
+	echo "Release:" $REL
+	bastille create $NAME $REL $IP
+
+	copy-service
+
+	install-pkgs
+
+	fetch-build-deploy
 
 }
 

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+doas bastille destroy -f $1
+doas ./vanilla create $1 10.17.89.33
+
