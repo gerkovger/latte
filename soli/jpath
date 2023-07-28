@@ -1,4 +1,0 @@
-#!/bin/sh
-
-jls -j $1 | cut -w -f $2 | tail -1
-
