@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
-jls -j $1 | cut -w -f 5 | tail -1
+jls -j $1 | cut -w -f $2 | tail -1
 
