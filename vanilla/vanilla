@@ -1,0 +1,28 @@
+#!/bin/sh
+
+create_jail() {
+    echo "Creating vanilla jail with name" $NAME "at" $IP
+    REL=$(uname -a | cut -w -f 3)
+    echo "Release:" $REL
+    bastille create $NAME $REL $IP
+    
+    
+    bastille cmd $NAME pkg install -y openjdk17
+
+}
+
+CMD=$1
+shift
+
+case $CMD in
+    create)
+        #create jail
+        NAME=$1
+        IP=$2
+        create_jail        
+        ;;
+    *)
+        echo "Unknown command" $CMD
+        ;;
+esac
+
